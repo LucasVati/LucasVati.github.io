@@ -44,6 +44,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 	
 <body>
 
+	<!-- <button class="button" onclick="setupScene(1)">Wind Tunnel</button>
+	<button class="button" onclick="setupScene(3)">Hires Tunnel</button>
+	<button class="button" onclick="setupScene(0)">Tank</button>
+	<button class="button" onclick="setupScene(2)">Paint</button> -->
+	<!-- <input type = "checkbox" id = "streamButton" onclick = "scene.showStreamlines = !scene.showStreamlines">
+	<input type = "checkbox" id = "velocityButton" onclick = "scene.showVelocities = !scene.showVelocities">
+	<input type = "checkbox" name = "field" id = "pressureButton" onclick = "scene.showPressure = !scene.showPressure;">  -->
+	<!-- <input type = "checkbox" name = "field" id = "smokeButton" onclick = "scene.showSmoke = !scene.showSmoke;" checked> -->
+	<!-- <input type = "checkbox" id = "overrelaxButton" onclick = "scene.overRelaxation = scene.overRelaxation == 1.0 ? 1.9 : 1.0" checked> -->
 	<br>
 	<canvas id="myCanvas" style="border:2px solid"></canvas>
 	
@@ -52,7 +61,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 	var canvas = document.getElementById("myCanvas");
 	var c = canvas.getContext("2d");	
 	canvas.width = window.innerWidth - 20;
-	canvas.height = window.innerHeight - 200;
+	canvas.height = window.innerHeight - 100;
 
 	canvas.focus();
 
@@ -344,7 +353,25 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 		var n = f.numY;
 
-		var inVel = 1.25;
+		// if (sceneNr == 0) {   		// tank
+
+		// 	for (var i = 0; i < f.numX; i++) {
+		// 		for (var j = 0; j < f.numY; j++) {
+		// 			var s = 1.0;	// fluid
+		// 			if (i == 0 || i == f.numX-1 || j == 0)
+		// 				s = 0.0;	// solid
+		// 			f.s[i*n + j] = s
+		// 		}
+		// 	}
+		// 	scene.gravity = -9.81;
+		// 	// scene.showPressure = true;
+		// 	scene.showSmoke = false;
+		// 	// scene.showStreamlines = false;
+		// 	// scene.showVelocities = false;
+		// }
+		// else if (sceneNr == 1 || sceneNr == 3) { // vortex shedding
+
+		var inVel = 1.0;
 		for (var i = 0; i < f.numX; i++) {
 			for (var j = 0; j < f.numY; j++) {
 				var s = 1.0;	// fluid
@@ -368,13 +395,34 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 		setObstacle(0.4, 0.5, true)
 
 		scene.gravity = 0.0;
+		// scene.showPressure = false;
 		scene.showSmoke = true;
+		// scene.showStreamlines = false;
+		// scene.showVelocities = false;
 
 		if (sceneNr == 3) {
 			scene.dt = 1.0 / 120.0;
 			scene.numIters = 100;
 			scene.showPressure = true;
 		}
+
+		// }
+		// else if (sceneNr == 2) { // paint
+
+		// 	scene.gravity = 0.0;
+		// 	scene.overRelaxation = 1.0;
+		// 	// scene.showPressure = false;
+		// 	scene.showSmoke = true;
+		// 	// scene.showStreamlines = false;
+		// 	// scene.showVelocities = false;
+		// 	scene.obstacleRadius = 0.1;
+		// }
+
+		// // document.getElementById("streamButton").checked = scene.showStreamlines;
+		// // document.getElementById("velocityButton").checked = scene.showVelocities;
+		// // document.getElementById("pressureButton").checked = scene.showPressure;
+		// document.getElementById("smokeButton").checked = scene.showSmoke;
+		// document.getElementById("overrelaxButton").checked = scene.overRelaxation > 1.0;
 		
 	}
 
@@ -438,7 +486,17 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 		for (var i = 0; i < f.numX; i++) {
 			for (var j = 0; j < f.numY; j++) {
 
-				if (scene.showSmoke) {
+				if (scene.showPressure) {
+					var p = f.p[i*n + j];
+					var s = f.m[i*n + j];
+					color = getSciColor(p, minP, maxP);
+					if (scene.showSmoke) {
+						color[0] = Math.max(0.0, color[0] - 255*s);
+						color[1] = Math.max(0.0, color[1] - 255*s);
+						color[2] = Math.max(0.0, color[2] - 255*s);
+					}
+				}
+				else if (scene.showSmoke) {
 					var s = f.m[i*n + j];
 					color[0] = 255*s;
 					color[1] = 255*s;
@@ -476,13 +534,82 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 		c.putImageData(id, 0, 0);
 
+		// if (scene.showVelocities) {
 
+		// 	c.strokeStyle = "#000000";	
+		// 	scale = 0.02;	
+
+		// 	for (var i = 0; i < f.numX; i++) {
+		// 		for (var j = 0; j < f.numY; j++) {
+
+		// 			var u = f.u[i*n + j];
+		// 			var v = f.v[i*n + j];
+
+		// 			c.beginPath();
+
+		// 			x0 = cX(i * h);
+		// 			x1 = cX(i * h + u * scale);
+		// 			y = cY((j + 0.5) * h );
+
+		// 			c.moveTo(x0, y);
+		// 			c.lineTo(x1, y);
+		// 			c.stroke();
+
+		// 			x = cX((i + 0.5) * h);
+		// 			y0 = cY(j * h );
+		// 			y1 = cY(j * h + v * scale)
+
+		// 			c.beginPath();
+		// 			c.moveTo(x, y0);
+		// 			c.lineTo(x, y1);
+		// 			c.stroke();
+
+		// 		}
+		// 	}
+		// }
+
+		// if (scene.showStreamlines) {
+
+		// 	var segLen = f.h * 0.2;
+		// 	var numSegs = 15;
+
+		// 	c.strokeStyle = "#000000";
+
+		// 	for (var i = 1; i < f.numX - 1; i += 5) {
+		// 		for (var j = 1; j < f.numY - 1; j += 5) {
+
+		// 			var x = (i + 0.5) * f.h;
+		// 			var y = (j + 0.5) * f.h;
+
+		// 			c.beginPath();
+		// 			c.moveTo(cX(x), cY(y));
+
+		// 			for (var n = 0; n < numSegs; n++) {
+		// 				var u = f.sampleField(x, y, U_FIELD);
+		// 				var v = f.sampleField(x, y, V_FIELD);
+		// 				l = Math.sqrt(u*u + v*v);
+		// 				// x += u/l * segLen;
+		// 				// y += v/l * segLen;
+		// 				x += u * 0.01;
+		// 				y += v * 0.01;
+		// 				if (x > f.numX * f.h)
+		// 					break;
+
+		// 				c.lineTo(cX(x), cY(y));
+		// 			}
+		// 			c.stroke();
+		// 		}
+		// 	}
+		// }
 
 		if (scene.showObstacle) {
 
 			c.strokeW
 			r = scene.obstacleRadius + f.h;
-			c.fillStyle = "#204d7e";
+			if (scene.showPressure)
+				c.fillStyle = "#000000";
+			else
+				c.fillStyle = "#DDDDDD";
 			c.beginPath();	
 			c.arc(
 				cX(scene.obstacleX), cY(scene.obstacleY), cScale * r, 0.0, 2.0 * Math.PI); 
@@ -499,6 +626,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 			c.lineWidth = 1.0;
 		}
 
+		// if (scene.showPressure) {
+		// 	var s = "pressure: " + minP.toFixed(0) + " - " + maxP.toFixed(0) + " N/m";
+		// 	c.fillStyle ="#000000";
+		// 	c.font = "16px Arial";
+		// 	c.fillText(s, 10, 35);
+		// }
 	}
 
 	function setObstacle(x, y, reset) {
@@ -640,7 +773,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 </script> 
 </body>
 </html>
-<p style="text-align:right;"><small><small></small>Animation from Ten Minute Physics</small></p>
+© 2022 Matthias Müller
 
 
 
